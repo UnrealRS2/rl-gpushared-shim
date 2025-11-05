@@ -1,0 +1,5 @@
+/native/
+/out/
+/cmake-build-debug/
+
+.idea/
