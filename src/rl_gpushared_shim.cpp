@@ -8,12 +8,6 @@
 
 extern "C" {
 
-// Constants must match Java
-static constexpr int BUFFER_COUNT = 2;
-static constexpr int MAX_SCENE_SIZE = 8 * 1024 * 1024;            // 8 MB
-static constexpr int MAX_UI_SIZE = 3840 * 2160 * 4;              // RGBA 4K
-static constexpr int INPUT_QUEUE_SIZE = 256;
-
 // POD structs with fixed layout for predictable offsets
 #pragma pack(push, 1)
     struct RLCameraStatus
@@ -22,11 +16,11 @@ static constexpr int INPUT_QUEUE_SIZE = 256;
         int pitch, yaw, scale;
     };
 
-    struct RLFrameStatus
+    struct RLBufferInfo
     {
         int width;
-        int height;
-        bool ready = false;
+        int height1;
+        bool ready;
         bool consumed = true;
     };
 
@@ -34,14 +28,14 @@ static constexpr int INPUT_QUEUE_SIZE = 256;
 struct FixedSharedMemoryRegionPOD
 {
     RLCameraStatus camera;
-    RLFrameStatus front_frame_status;
-    RLFrameStatus back_frame_status;
+    RLBufferInfo front_frame_status;
+    RLBufferInfo back_frame_status;
 };
 #pragma pack(pop)
 
 // Compute sizes & offsets
 static const size_t CAMERA_SIZE = sizeof(RLCameraStatus);
-static const size_t FRAME_STATUS_SIZE = sizeof(RLFrameStatus);
+static const size_t FRAME_STATUS_SIZE = sizeof(RLBufferInfo);
 static const size_t FIXED_SHARED_REGION_SIZE = sizeof(FixedSharedMemoryRegionPOD);
 
 // Globals for mapping

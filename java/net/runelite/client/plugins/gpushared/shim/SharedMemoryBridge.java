@@ -9,8 +9,6 @@ public class SharedMemoryBridge
         System.loadLibrary("rl_gpushared_shim");
     }
 
-    private static final int CAMERA_SIZE = 24;
-
     public long nativeHandle = 0;
     public ByteBuffer cameraBuf;
     public ByteBuffer frontBufferInfo;
