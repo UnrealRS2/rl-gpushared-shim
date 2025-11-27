@@ -54,8 +54,7 @@ struct SMouseRelease {
 // Shared region layout (contiguous)
 struct FixedSharedMemoryRegionPOD {
     RLCameraStatus camera{};
-    RLBufferInfo front_frame_status;
-    RLBufferInfo back_frame_status;
+    RLBufferInfo front_buffer;
     SResolution resolution;
     SMouseMove mouse_move;
     SMousePress mouse_press;
@@ -83,11 +82,7 @@ static inline RLCameraStatus *ptr_camera() {
     shmPtr = gBase + sizeof(RLCameraStatus);
     return reinterpret_cast<RLCameraStatus *>(shmPtr - sizeof(RLCameraStatus));
 }
-static inline RLBufferInfo *ptr_front_buffer_info() {
-    shmPtr += sizeof(RLBufferInfo);
-    return reinterpret_cast<RLBufferInfo *>(shmPtr - sizeof(RLBufferInfo));
-}
-static inline RLBufferInfo *ptr_back_buffer_info() {
+static inline RLBufferInfo *ptr_frame_buffer() {
     shmPtr += sizeof(RLBufferInfo);
     return reinterpret_cast<RLBufferInfo *>(shmPtr - sizeof(RLBufferInfo));
 }
@@ -187,12 +182,7 @@ JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_Shared
 }
 JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_SharedMemoryBridge_mapFrontBufferInfo
 (JNIEnv *env, jobject /*this*/, jlong /*handle*/) {
-    void *ptr = ptr_front_buffer_info();
-    return env->NewDirectByteBuffer(ptr, sizeof(RLBufferInfo));
-}
-JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_SharedMemoryBridge_mapBackBufferInfo
-(JNIEnv *env, jobject /*this*/, jlong /*handle*/) {
-    void *ptr = ptr_back_buffer_info();
+    void *ptr = ptr_frame_buffer();
     return env->NewDirectByteBuffer(ptr, sizeof(RLBufferInfo));
 }
 JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_SharedMemoryBridge_mapResolution
