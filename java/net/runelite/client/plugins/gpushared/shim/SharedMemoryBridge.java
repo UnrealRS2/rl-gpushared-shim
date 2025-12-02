@@ -13,17 +13,15 @@ public class SharedMemoryBridge
     public long nativeHandle = 0;
     public ByteBuffer cameraBuf;
     public ByteBuffer frontBufferInfo;
-    public ByteBuffer backBufferInfo;
     public ByteBuffer resolutionBuffer;
     public ByteBuffer mouseMoveBuffer;
-    public ByteBuffer mousePress;
-    public ByteBuffer mouseRelease;
+    public ByteBuffer mousePressBuffer;
+    public ByteBuffer mouseReleaseBuffer;
 
     public native long openSharedMemory(String name);
     public native void closeSharedMemory(long handle);
     public native ByteBuffer mapCamera(long handle);
-    public native ByteBuffer mapFrontBufferInfo(long handle);
-    public native ByteBuffer mapBackBufferInfo(long handle);
+    public native ByteBuffer mapFrameBuffer(long handle);
     public native ByteBuffer mapResolution(long handle);
     public native ByteBuffer mapMouseMove(long handle);
     public native ByteBuffer mapMousePress(long handle);
@@ -36,14 +34,12 @@ public class SharedMemoryBridge
             throw new RuntimeException("Failed to open shared memory: " + shmName);
 
         cameraBuf      = mapCamera(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
-        frontBufferInfo = mapFrontBufferInfo(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
-        backBufferInfo = mapBackBufferInfo(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
+        frontBufferInfo = mapFrameBuffer(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
         resolutionBuffer = mapResolution(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
         mouseMoveBuffer = mapMouseMove(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
-        mousePress = mapMousePress(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
-        mouseRelease = mapMouseRelease(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
-        setFrontBufferInfo(-1, -1, false, true, null);
-        setBackBufferInfo(-1, -1, false, true, null);
+        mousePressBuffer = mapMousePress(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
+        mouseReleaseBuffer = mapMouseRelease(nativeHandle).order(ByteOrder.LITTLE_ENDIAN);
+        setFrameBuffer(-1, -1, false, true, null);
         setResolution(-1, -1, true);
         setMouseMove(-1, -1, true);
         setMousePress(-1, true);
@@ -74,7 +70,7 @@ public class SharedMemoryBridge
         cameraBuf.rewind();
     }
 
-    public void setFrontBufferInfo(int width, int height, boolean ready, boolean consumed, int[] pixels) {
+    public void setFrameBuffer(int width, int height, boolean ready, boolean consumed, int[] pixels) {
         frontBufferInfo.clear();
         frontBufferInfo.putInt(width);
         frontBufferInfo.putInt(height);
@@ -88,22 +84,6 @@ public class SharedMemoryBridge
             intView.put(pixels);
         }
         frontBufferInfo.rewind();
-    }
-
-    public void setBackBufferInfo(int width, int height, boolean ready, boolean consumed, int[] pixels) {
-        backBufferInfo.clear();
-        backBufferInfo.putInt(width);
-        backBufferInfo.putInt(height);
-        backBufferInfo.put((byte) (ready ? 1 : 0));
-        backBufferInfo.put((byte) (consumed ? 1 : 0));
-        if (pixels != null) {
-            // 2-byte padding so next int[] is 4-byte aligned
-            backBufferInfo.put((byte) 0);
-            backBufferInfo.put((byte) 0);
-            IntBuffer intView = backBufferInfo.asIntBuffer();
-            intView.put(pixels);
-        }
-        backBufferInfo.rewind();
     }
 
     // SHIM -> RuneLite
@@ -168,17 +148,55 @@ public class SharedMemoryBridge
         mouseMoveBuffer.rewind();
     }
 
+    public static MousePress mousePress;
+
+    public static class MousePress {
+        public int button;
+        public boolean consumed;
+
+        public MousePress(int button, boolean consumed) {
+            this.button = button;
+            this.consumed = consumed;
+        }
+    }
+
     public void setMousePress(int button, boolean consumed) {
-        mousePress.clear();
-        mousePress.putInt(button);
-        mousePress.put((byte) (consumed ? 1 : 0));
-        mousePress.rewind();
+        mousePressBuffer.clear();
+        mousePressBuffer.putInt(button);
+        mousePressBuffer.put((byte) (consumed ? 1 : 0));
+        mousePressBuffer.rewind();
+    }
+
+    public void getMousePress() {
+        mousePress = new MousePress(
+                mousePressBuffer.getInt(),
+                mousePressBuffer.get() == 1);
+        mousePressBuffer.rewind();
+    }
+
+    public static MouseRelease mouseRelease;
+
+    public static class MouseRelease {
+        public int button;
+        public boolean consumed;
+
+        public MouseRelease(int button, boolean consumed) {
+            this.button = button;
+            this.consumed = consumed;
+        }
     }
 
     public void setMouseRelease(int button, boolean consumed) {
-        mousePress.clear();
-        mousePress.putInt(button);
-        mousePress.put((byte) (consumed ? 1 : 0));
-        mousePress.rewind();
+        mouseReleaseBuffer.clear();
+        mouseReleaseBuffer.putInt(button);
+        mouseReleaseBuffer.put((byte) (consumed ? 1 : 0));
+        mouseReleaseBuffer.rewind();
+    }
+
+    public void getMouseRelease() {
+        mouseRelease = new MouseRelease(
+                mouseReleaseBuffer.getInt(),
+                mouseReleaseBuffer.get() == 1);
+        mouseReleaseBuffer.rewind();
     }
 }

@@ -81,7 +81,6 @@ import net.runelite.client.ui.DrawManager;
 import net.runelite.rlawt.AWTContext;
 import org.lwjgl.opengl.GL;
 
-import static net.runelite.client.callback.Hooks.eventComponent;
 import static org.lwjgl.opengl.GL33C.*;
 import static org.lwjgl.opengl.GL43C.GL_DEBUG_SOURCE_API;
 import static org.lwjgl.opengl.GL43C.GL_DEBUG_TYPE_OTHER;
@@ -1388,84 +1387,85 @@ public class GpuPluginShared extends Plugin implements DrawCallbacks
         lastWidth = SharedMemoryBridge.resolution.width;
         lastHeight = SharedMemoryBridge.resolution.height;
 
-        if (eventComponent != null) {
-            boolean update = false;
 
-            if (!SharedMemoryBridge.mouseMove.consumed) {
-                if (lastX != SharedMemoryBridge.mouseMove.x || lastY != SharedMemoryBridge.mouseMove.y) {
-                    update = true;
-                }
-                if (SharedMemoryBridge.mouseMove.x < 0 || SharedMemoryBridge.mouseMove.x > 5000)
-                    update = false;
-                if (SharedMemoryBridge.mouseMove.y < 0 || SharedMemoryBridge.mouseMove.y > 5000)
-                    update = false;
+        boolean update = false;
 
-                int dx = Math.abs(SharedMemoryBridge.mouseMove.x - lastX);
-                int dy = Math.abs(SharedMemoryBridge.mouseMove.y - lastY);
+        Component eventComponent = client.getCanvas();
 
-                update = dx > 1 || dy > 1;
-
-                if (update) {
-                    // Example: get mouse x/y from wherever your shared memory stores it
-                    lastX = SharedMemoryBridge.mouseMove.x;
-                    lastY = SharedMemoryBridge.mouseMove.y;
-
-                    // Create a new MouseEvent for the client panel
-                    MouseEvent event = new MouseEvent(
-                            eventComponent,        // Source component
-                            MouseEvent.MOUSE_MOVED,      // Event type
-                            System.currentTimeMillis(),  // When it happened
-                            0,                           // Modifiers (none here, can add SHIFT, CTRL, etc)
-                            lastX,                      // X coordinate
-                            lastY,                      // Y coordinate
-                            0,                           // Click count
-                            false                        // Is popup trigger
-                    );
-
-                    // Dispatch it to the component
-                    eventComponent.dispatchEvent(event);
-                }
-
-                bridge.setMouseMove(-1, -1, true);
+        if (!SharedMemoryBridge.mouseMove.consumed) {
+            if (lastX != SharedMemoryBridge.mouseMove.x || lastY != SharedMemoryBridge.mouseMove.y) {
+                update = true;
             }
+            if (SharedMemoryBridge.mouseMove.x < 0 || SharedMemoryBridge.mouseMove.x > 5000)
+                update = false;
+            if (SharedMemoryBridge.mouseMove.y < 0 || SharedMemoryBridge.mouseMove.y > 5000)
+                update = false;
 
-            if (!SharedMemoryBridge.mousePress.consumed) {
+            int dx = Math.abs(SharedMemoryBridge.mouseMove.x - lastX);
+            int dy = Math.abs(SharedMemoryBridge.mouseMove.y - lastY);
+
+            update = dx > 1 || dy > 1;
+
+            if (update) {
+                // Example: get mouse x/y from wherever your shared memory stores it
+                lastX = SharedMemoryBridge.mouseMove.x;
+                lastY = SharedMemoryBridge.mouseMove.y;
+
+                // Create a new MouseEvent for the client panel
                 MouseEvent event = new MouseEvent(
-                        eventComponent,
-                        MouseEvent.MOUSE_PRESSED,
-                        System.currentTimeMillis(),
-                        0,
-                        lastX,
-                        lastY,
-                        1,
-                        false,
-                        SharedMemoryBridge.mousePress.button
+                        eventComponent,        // Source component
+                        MouseEvent.MOUSE_MOVED,      // Event type
+                        System.currentTimeMillis(),  // When it happened
+                        0,                           // Modifiers (none here, can add SHIFT, CTRL, etc)
+                        lastX,                      // X coordinate
+                        lastY,                      // Y coordinate
+                        0,                           // Click count
+                        false                        // Is popup trigger
                 );
 
                 // Dispatch it to the component
                 eventComponent.dispatchEvent(event);
-                System.out.println("Mouse clicked");
-                bridge.setMousePress(-1, true);
             }
 
-            if (!SharedMemoryBridge.mouseRelease.consumed) {
-                MouseEvent event = new MouseEvent(
-                        eventComponent,
-                        MouseEvent.MOUSE_RELEASED,
-                        System.currentTimeMillis(),
-                        0,
-                        lastX,
-                        lastY,
-                        1,
-                        false,
-                        SharedMemoryBridge.mouseRelease.button
-                );
+            bridge.setMouseMove(-1, -1, true);
+        }
 
-                // Dispatch it to the component
-                eventComponent.dispatchEvent(event);
+        if (!SharedMemoryBridge.mousePress.consumed) {
+            MouseEvent event = new MouseEvent(
+                    eventComponent,
+                    MouseEvent.MOUSE_PRESSED,
+                    System.currentTimeMillis(),
+                    0,
+                    lastX,
+                    lastY,
+                    1,
+                    false,
+                    SharedMemoryBridge.mousePress.button
+            );
 
-                bridge.setMouseRelease(-1, true);
-            }
+            // Dispatch it to the component
+            eventComponent.dispatchEvent(event);
+            System.out.println("Mouse clicked");
+            bridge.setMousePress(-1, true);
+        }
+
+        if (!SharedMemoryBridge.mouseRelease.consumed) {
+            MouseEvent event = new MouseEvent(
+                    eventComponent,
+                    MouseEvent.MOUSE_RELEASED,
+                    System.currentTimeMillis(),
+                    0,
+                    lastX,
+                    lastY,
+                    1,
+                    false,
+                    SharedMemoryBridge.mouseRelease.button
+            );
+
+            // Dispatch it to the component
+            eventComponent.dispatchEvent(event);
+
+            bridge.setMouseRelease(-1, true);
         }
 
         // yaw: 0 = north, increasing clockwise
