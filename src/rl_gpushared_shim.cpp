@@ -180,7 +180,7 @@ JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_Shared
     void *ptr = ptr_camera();
     return env->NewDirectByteBuffer(ptr, sizeof(RLCameraStatus));
 }
-JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_SharedMemoryBridge_mapFrontBufferInfo
+JNIEXPORT jobject JNICALL Java_net_runelite_client_plugins_gpushared_shim_SharedMemoryBridge_mapFrameBuffer
 (JNIEnv *env, jobject /*this*/, jlong /*handle*/) {
     void *ptr = ptr_frame_buffer();
     return env->NewDirectByteBuffer(ptr, sizeof(RLBufferInfo));
