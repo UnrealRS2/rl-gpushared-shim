@@ -8,18 +8,21 @@
 
 ## Overview
 
-`rl-gpushared-shim` is a lightweight shared memory bridge for RuneLite that allows High-performance shared game state between Java and C++:
+`rl-gpushared-shim` is a lightweight shared memory bridge for RuneLite that allows high-throughput sync between Java and C++:
 
 The goal is to allow RuneLite to act as a backend scene/data provider while an external engine handles rendering, without modifying RuneLite's/OSRS's core rendering pipeline.
-  
-I should note that I will not release the source code for the Unreal frontend.
 
 ---
 
 ## Features
 
-- **Shared memory-based communication** for low-latency frame transfer
-- **Double-buffered frame data** for smooth rendering
+RuneLite -> Shim:
+- Camera
+- FrameBuffer
+
+Shim -> RuneLite
+- Resolution
+- Mouse Move / Press / Release
 
 ---
 
@@ -27,10 +30,12 @@ I should note that I will not release the source code for the Unreal frontend.
 
 The shared memory region contains:
 
-- **CameraState** — x, y, z, yaw, pitch, zoom
-- **FrameBufferInfo** — double-buffered:
-    - `FrontBufferInfo` — width, height, ready, consumed
-    - `BackBufferInfo` — width, height, ready, consumed
+- **RLCameraState** — x, y, z, yaw, pitch, zoom
+- **RLFrameBufferInfo** — width, height, ready, consumed
+- **SResolution** — width, height, consumed
+- **SMouseMove** — x, y, consumed
+- **SMousePress** — button, consumed
+- **SMouseRelease** — button, consumed
 ---
 
 ## Building
