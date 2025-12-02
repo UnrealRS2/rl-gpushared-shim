@@ -2,7 +2,7 @@
 
 **External Renderer Shim for RuneLite**
 
-<img width="2879" height="1619" alt="image" src="https://github.com/user-attachments/assets/645b6f71-5956-498b-999d-28fd0257e1b6" />
+![0pmStEXGDZ](https://github.com/user-attachments/assets/f5880cc6-eb47-4150-a84c-96ab184da0af)
 
 ---
 
